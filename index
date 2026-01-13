@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Si-Amanah Broadcast - RS Juanda</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS for Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-600 p-2 rounded-lg shadow-lg text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4-4-4"/><path d="M3 3.4c3.1 3 4 9.2 4 10.6 0 4-4 4-4 4"/><path d="M12 14H3"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800 leading-none">Si-Amanah PRO</h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">RS Juanda Automation</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button id="modeManualBtn" onclick="setMode('manual')" class="px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all bg-white shadow-sm text-emerald-600">
+                        MANUAL (WEB)
+                    </button>
+                    <button id="modeApiBtn" onclick="setMode('api')" class="px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all text-slate-500 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> OTOMATIS (API)
+                    </button>
+                </div>
+                <button onclick="toggleSettings()" class="p-2 rounded-lg border bg-white text-slate-400 border-slate-200 hover:bg-slate-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="hidden mb-8 bg-slate-800 rounded-3xl p-6 text-white shadow-2xl animate-fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold flex items-center gap-2 text-emerald-400">
+                    Konfigurasi WhatsApp Cloud API
+                </h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Access Token</label>
+                    <input id="apiToken" type="password" class="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-500" placeholder="EAAB...">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Phone Number ID</label>
+                    <input id="apiPhoneId" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-500" placeholder="102938...">
+                </div>
+            </div>
+            <p class="mt-4 text-[10px] text-slate-400 italic">Simpan data konfigurasi agar pengiriman otomatis dapat berjalan.</p>
+        </div>
+
+        <!-- Custom Notification -->
+        <div id="notification" class="hidden fixed top-20 right-4 z-50 p-4 rounded-2xl flex items-center gap-3 shadow-2xl border-2 bg-white animate-fade-in">
+            <div id="notifIcon"></div>
+            <span id="notifText" class="font-bold text-sm"></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Sidebar: Kontrol Kontak -->
+            <div class="lg:col-span-5 space-y-6">
+                <section class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Input & Impor Pasien</h2>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="inputName" type="text" placeholder="Nama Pasien" class="px-4 py-2.5 bg-slate-50 rounded-xl text-sm border border-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <input id="inputPhone" type="text" placeholder="No. WA (08...)" class="px-4 py-2.5 bg-slate-50 rounded-xl text-sm border border-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20">
+                        </div>
+                        <button onclick="addManualContact()" class="w-full py-3 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition-all">
+                            TAMBAH KE ANTREAN
+                        </button>
+                        
+                        <div class="relative py-2 text-center">
+                            <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-100"></span></div>
+                            <span class="relative bg-white px-3 text-[10px] font-black text-slate-300 uppercase">ATAU</span>
+                        </div>
+                        
+                        <label class="flex flex-col items-center justify-center h-24 border-2 border-dashed border-slate-100 rounded-2xl hover:bg-emerald-50/50 hover:border-emerald-300 transition-all cursor-pointer group">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-300 group-hover:text-emerald-500 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg>
+                            <span class="text-[10px] font-bold text-slate-500 tracking-tighter uppercase">Impor Excel (.xlsx)</span>
+                            <input type="file" id="excelInput" class="hidden" accept=".xlsx" onchange="handleExcel(event)">
+                        </label>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm flex flex-col h-[400px]">
+                    <div class="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="text-xs font-black text-slate-600 uppercase tracking-tighter">Daftar Antrean</h3>
+                        <button onclick="clearRecipients()" class="text-[10px] font-bold text-rose-500 hover:bg-rose-50 px-2 py-1 rounded">HAPUS SEMUA</button>
+                    </div>
+                    <div class="overflow-y-auto flex-1 custom-scrollbar" id="recipientsList">
+                        <!-- Kontak akan di-render di sini -->
+                        <div class="p-12 text-center text-slate-300">
+                            <p class="text-xs font-bold italic">Belum ada kontak</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Content Area: AI & Preview -->
+            <div class="lg:col-span-7">
+                <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden flex flex-col h-full ring-1 ring-slate-100">
+                    <div class="p-8 bg-slate-50/50 flex-1">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-sm font-black uppercase text-emerald-600 tracking-widest">AI Content Studio</h2>
+                            <div class="flex items-center gap-2 text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                                GEMINI AI ACTIVE
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Tujuan Pesan / Konteks</label>
+                                <div class="flex gap-2">
+                                    <textarea id="aiContext" class="flex-1 bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:ring-4 focus:ring-emerald-50 h-24 resize-none font-medium shadow-inner">Informasi promo layanan antar jemput gratis bulan ini</textarea>
+                                    <button id="generateBtn" onclick="generateMessage()" class="bg-emerald-600 text-white rounded-2xl px-5 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50">
+                                        <svg id="genIcon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="relative">
+                                <div class="absolute -top-3 left-6 bg-white px-3 py-0.5 text-[9px] font-black text-slate-400 border border-slate-100 rounded-full shadow-sm uppercase tracking-widest">Pratinjau Pesan WA</div>
+                                <textarea id="finalMessage" class="w-full bg-white border-2 border-slate-100 rounded-[2rem] p-8 text-sm leading-relaxed min-h-[350px] outline-none focus:border-emerald-500 transition-all font-medium custom-scrollbar shadow-inner" placeholder="Pesan hasil AI akan muncul di sini... gunakan [Nama] untuk personalisasi."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="footerAction" class="p-8 bg-slate-900 border-t border-slate-800 transition-colors">
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <div>
+                                <h4 class="text-xs font-black text-white uppercase tracking-[0.2em] mb-1 flex items-center gap-2">
+                                    <span id="modeIcon" class="text-emerald-400">●</span> <span id="modeTitle">MODE MANUAL (WEB)</span>
+                                </h4>
+                                <p id="modeDesc" class="text-[10px] text-white/50 font-medium">Sistem akan membuka tab WhatsApp baru satu per satu.</p>
+                            </div>
+                            
+                            <button onclick="sendNext()" id="sendBtn" class="w-full sm:w-auto px-10 py-4 bg-emerald-500 text-white rounded-2xl font-black text-xs hover:bg-emerald-400 transition-all shadow-2xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-20">
+                                KIRIM PESAN BERIKUTNYA 
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="mt-8 pt-6 border-t border-white/5">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] font-black text-white/40 uppercase tracking-widest tracking-[0.3em]">Progress Pengiriman</span>
+                                <span id="progressText" class="text-[10px] font-bold text-white tracking-widest">0 / 0</span>
+                            </div>
+                            <div class="h-2 w-full bg-white/10 rounded-full overflow-hidden p-0.5">
+                                <div id="progressBar" class="h-full bg-emerald-500 transition-all duration-700 w-0 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 mt-8 flex justify-between items-center opacity-40 grayscale pointer-events-none">
+        <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] italic">RS JUANDA • Melayani Dengan Hati</p>
+        <p class="text-[9px] font-bold text-slate-500">v3.0 HTML STANDALONE</p>
+    </footer>
+
+    <script>
+        // --- State Management ---
+        const apiKey = ""; 
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        let recipients = [];
+        let sendMode = 'manual';
+        let isGenerating = false;
+
+        // --- UI Logic ---
+        function setMode(mode) {
+            sendMode = mode;
+            const manualBtn = document.getElementById('modeManualBtn');
+            const apiBtn = document.getElementById('modeApiBtn');
+            const footer = document.getElementById('footerAction');
+            const modeTitle = document.getElementById('modeTitle');
+            const modeDesc = document.getElementById('modeDesc');
+            
+            if (mode === 'manual') {
+                manualBtn.classList.add('bg-white', 'shadow-sm', 'text-emerald-600');
+                manualBtn.classList.remove('text-slate-500');
+                apiBtn.classList.remove('bg-emerald-600', 'shadow-sm', 'text-white');
+                apiBtn.classList.add('text-slate-500');
+                footer.classList.replace('bg-emerald-950', 'bg-slate-900');
+                modeTitle.innerText = "MODE MANUAL (WEB)";
+                modeDesc.innerText = "Sistem akan membuka tab WhatsApp baru satu per satu.";
+            } else {
+                apiBtn.classList.add('bg-emerald-600', 'shadow-sm', 'text-white');
+                apiBtn.classList.remove('text-slate-500');
+                manualBtn.classList.remove('bg-white', 'shadow-sm', 'text-emerald-600');
+                manualBtn.classList.add('text-slate-500');
+                footer.classList.replace('bg-slate-900', 'bg-emerald-950');
+                modeTitle.innerText = "MODE OTOMATIS (CLOUD API)";
+                modeDesc.innerText = "Pesan akan terkirim langsung di latar belakang melalui server Meta.";
+            }
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function showStatus(type, text) {
+            const notif = document.getElementById('notification');
+            const notifIcon = document.getElementById('notifIcon');
+            const notifText = document.getElementById('notifText');
+            
+            notif.classList.remove('hidden', 'border-emerald-500', 'border-rose-500', 'text-emerald-700', 'text-rose-700');
+            notif.classList.add(type === 'success' ? 'border-emerald-500' : 'border-rose-500');
+            notif.classList.add(type === 'success' ? 'text-emerald-700' : 'text-rose-700');
+            
+            notifIcon.innerHTML = type === 'success' 
+                ? '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+            
+            notifText.innerText = text;
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 4000);
+        }
+
+        // --- Core Functions ---
+        function formatPhone(num) {
+            let cleaned = ('' + num).replace(/\D/g, '');
+            if (!cleaned) return null;
+            if (cleaned.startsWith('0')) cleaned = '62' + cleaned.substring(1);
+            if (cleaned.startsWith('8')) cleaned = '62' + cleaned;
+            return cleaned.length >= 10 ? cleaned : null;
+        }
+
+        function renderList() {
+            const list = document.getElementById('recipientsList');
+            const progText = document.getElementById('progressText');
+            const progBar = document.getElementById('progressBar');
+            
+            if (recipients.length === 0) {
+                list.innerHTML = '<div class="p-12 text-center text-slate-300"><p class="text-xs font-bold italic">Belum ada kontak</p></div>';
+                progText.innerText = "0 / 0";
+                progBar.style.width = "0%";
+                return;
+            }
+
+            const sentCount = recipients.filter(r => r.status === 'sent').length;
+            progText.innerText = `${sentCount} / ${recipients.length}`;
+            progBar.style.width = `${(sentCount / recipients.length) * 100}%`;
+
+            list.innerHTML = recipients.map((r, index) => `
+                <div class="p-4 border-b border-slate-50 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">${r.name}</p>
+                        <p class="text-[10px] font-medium text-slate-400">+${r.number}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        ${r.status === 'sent' 
+                            ? '<span class="text-[9px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 uppercase">Terkirim</span>'
+                            : '<span class="text-[9px] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded-full uppercase">Antre</span>'}
+                        <button onclick="removeRecipient(${index})" class="text-slate-200 hover:text-rose-500"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addManualContact() {
+            const nameEl = document.getElementById('inputName');
+            const phoneEl = document.getElementById('inputPhone');
+            const phone = formatPhone(phoneEl.value);
+            
+            if (!phone) { showStatus('error', 'Nomor WA tidak valid.'); return; }
+            
+            recipients.push({
+                id: crypto.randomUUID(),
+                name: nameEl.value || 'Pasien',
+                number: phone,
+                status: 'pending'
+            });
+            
+            nameEl.value = ""; phoneEl.value = "";
+            renderList();
+            showStatus('success', 'Kontak ditambahkan.');
+        }
+
+        function removeRecipient(index) {
+            recipients.splice(index, 1);
+            renderList();
+        }
+
+        function clearRecipients() {
+            recipients = [];
+            renderList();
+        }
+
+        function handleExcel(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const data = XLSX.utils.sheet_to_json(ws);
+                
+                const imported = data.map(row => ({
+                    id: crypto.randomUUID(),
+                    name: row.Nama || row.nama || row.Name || 'Pasien',
+                    number: formatPhone(row.No_WA || row.whatsapp || row.phone || ''),
+                    status: 'pending'
+                })).filter(r => r.number);
+                
+                recipients = [...recipients, ...imported];
+                renderList();
+                showStatus('success', `${imported.length} kontak diimpor.`);
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        // --- AI Logic ---
+        async function generateMessage() {
+            const context = document.getElementById('aiContext').value;
+            const genBtn = document.getElementById('generateBtn');
+            const genIcon = document.getElementById('genIcon');
+            
+            if (!context) return;
+            
+            isGenerating = true;
+            genBtn.disabled = true;
+            genIcon.classList.add('animate-spin');
+
+            const sysPrompt = `Anda adalah staf profesional RS Juanda Kuningan. Buat copywriting WA ramah & sopan untuk "Layanan Antar Pasien Amanah". Gunakan [Nama] sebagai placeholder nama pasien. Konteks: ${context}`;
+
+            // Manual retry logic as per requirements
+            const fetchAi = async (retries = 5, delay = 1000) => {
+                try {
+                    const res = await fetch(GEMINI_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: "Buatkan variasi pesan WhatsApp profesional." }] }],
+                            systemInstruction: { parts: [{ text: sysPrompt }] }
+                        })
+                    });
+                    if (!res.ok) throw new Error();
+                    const json = await res.json();
+                    return json.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (e) {
+                    if (retries > 0) {
+                        await new Promise(r => setTimeout(r, delay));
+                        return fetchAi(retries - 1, delay * 2);
+                    }
+                    throw e;
+                }
+            };
+
+            try {
+                const text = await fetchAi();
+                document.getElementById('finalMessage').value = text;
+                showStatus('success', 'Konten AI berhasil dibuat!');
+            } catch (err) {
+                showStatus('error', 'Gagal memanggil AI Gemini.');
+            } finally {
+                isGenerating = false;
+                genBtn.disabled = false;
+                genIcon.classList.remove('animate-spin');
+            }
+        }
+
+        // --- Sending Logic ---
+        async function sendNext() {
+            const next = recipients.find(r => r.status === 'pending');
+            const messageTpl = document.getElementById('finalMessage').value;
+            
+            if (!next) { showStatus('error', 'Tidak ada antrean tersisa.'); return; }
+            if (!messageTpl) { showStatus('error', 'Buat pesan AI dulu!'); return; }
+
+            const personalized = messageTpl.replace(/\[Nama\]/g, next.name);
+
+            if (sendMode === 'api') {
+                const token = document.getElementById('apiToken').value;
+                const phoneId = document.getElementById('apiPhoneId').value;
+                
+                if (!token || !phoneId) {
+                    showStatus('error', 'Konfigurasi Cloud API belum lengkap!');
+                    toggleSettings();
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`https://graph.facebook.com/v20.0/${phoneId}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            messaging_product: "whatsapp",
+                            to: next.number,
+                            type: "text",
+                            text: { body: personalized }
+                        })
+                    });
+                    
+                    if (res.ok) {
+                        next.status = 'sent';
+                        renderList();
+                        showStatus('success', `Terkirim ke ${next.name}`);
+                    } else {
+                        const err = await res.json();
+                        showStatus('error', `Gagal API: ${err.error.message}`);
+                    }
+                } catch (e) {
+                    showStatus('error', 'Gagal menghubungi server Meta.');
+                }
+            } else {
+                // Manual Mode
+                const url = `https://wa.me/${next.number}?text=${encodeURIComponent(personalized)}`;
+                window.open(url, '_blank');
+                next.status = 'sent';
+                renderList();
+            }
+        }
+
+        // Init UI
+        renderList();
+
+    </script>
+</body>
+</html>
